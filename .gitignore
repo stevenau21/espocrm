@@ -1,0 +1,8 @@
+# EspoCRM Gitignore
+*.zip
+mysql_data/
+data/
+custom/
+client/css/
+nginx/logs/
+# Keep config for reference if needed, but normally data/config.php is ignored.

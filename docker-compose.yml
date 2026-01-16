@@ -1,0 +1,59 @@
+services:
+  espocrm-db:
+    image: mariadb:latest
+    container_name: espocrm-db
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: root_password
+      MARIADB_DATABASE: espocrm
+      MARIADB_USER: espocrm
+      MARIADB_PASSWORD: espocrm_password
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+
+  espocrm:
+    image: espocrm/espocrm:fpm
+    container_name: espocrm
+    restart: always
+    environment:
+      ESPOCRM_DATABASE_HOST: espocrm-db
+      ESPOCRM_DATABASE_USER: espocrm
+      ESPOCRM_DATABASE_PASSWORD: espocrm_password
+      ESPOCRM_DATABASE_NAME: espocrm
+    volumes:
+      - .:/var/www/html
+    entrypoint: php-fpm
+
+  espocrm-nginx:
+    image: nginx:latest
+    container_name: espocrm-nginx
+    restart: always
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - espocrm
+
+  espocrm-daemon:
+    image: espocrm/espocrm:fpm
+    container_name: espocrm-daemon
+    restart: always
+    volumes:
+      - .:/var/www/html
+    entrypoint: docker-daemon.sh
+    depends_on:
+      - espocrm
+
+  espocrm-websocket:
+    image: espocrm/espocrm:fpm
+    container_name: espocrm-websocket
+    restart: always
+    volumes:
+      - .:/var/www/html
+    entrypoint: docker-websocket.sh
+    ports:
+      - "8081:8080"
+    depends_on:
+      - espocrm
